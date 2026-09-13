@@ -1,0 +1,13 @@
+.venv/
+.env
+**/.env
+__pycache__/
+*.pyc
+.DS_Store
+fda_progress.txt
+last_run.txt
+latest.txt
+test_content.html
+general_information
+clinical_trials_info
+fda_info
