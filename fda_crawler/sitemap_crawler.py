@@ -1,17 +1,20 @@
+from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 import time
 from typing import Optional
 
+BASE_DIR = Path(__file__).resolve().parent
+
 def load_progress(file_path: str = "progress.txt") -> set[str]:
     try:
-        with open(file_path, 'r') as f:
+        with open(BASE_DIR / file_path, 'r') as f:
             return set(line.strip() for line in f if line.strip())
     except FileNotFoundError:
         return set()
 
 def save_progress(file_path: str = "progress.txt", link: str = ""):
-    with open(file_path, 'a') as f:
+    with open(BASE_DIR / file_path, 'a') as f:
         f.write(link + '\n')
 
 def parse_sitemap(url: str, headers: dict, tag_name: str) -> list[tuple[str, Optional[str]]]:

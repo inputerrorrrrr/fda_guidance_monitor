@@ -1,9 +1,12 @@
+from pathlib import Path
 import yagmail
 import os
 from dotenv import load_dotenv
 import time
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv(BASE_DIR / ".env")
 
 def send_email(content, url, to_email):
 

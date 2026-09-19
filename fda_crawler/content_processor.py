@@ -9,7 +9,9 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv(BASE_DIR / ".env")
 
 
 api_key = os.getenv("API_KEY")
@@ -44,19 +46,28 @@ def write_to_file(name: str, content: str):
     if not content.strip():
         print("The content to write is empty or whitespace.")
     
-    with open(filename, 'w', encoding='utf-8') as f:
+    with open(BASE_DIR / filename, 'w', encoding='utf-8') as f:
         f.write(content)
 
-    with open ("latest.txt", 'w', encoding='utf-8') as f:
+    with open(BASE_DIR / "latest.txt", 'w', encoding='utf-8') as f:
         f.write(filename)
 
     return filename
 
 def parse_h_types(file_path: str) -> str:
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            raw = f.read()
-        soup = BeautifulSoup(raw, 'html.parser')
+        with open(BASE_DIR / file_path, 'r', encoding='utf-8') as f:
+            return parse_h_html(f.read())
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return ""
+    except Exception as e:
+        print(f"An error occurred while reading the file: {e}")
+        return ""
+
+def parse_h_html(html_text: str) -> str:
+    try:
+        soup = BeautifulSoup(html_text, 'html.parser')
 
         article = soup.find('article', id='main-content')
         main_content = article.find('div', attrs={"role": "main"})
@@ -96,16 +107,13 @@ def parse_h_types(file_path: str) -> str:
 
         return "\n".join(texts)     
         
-    except FileNotFoundError:
-        print(f"File not found: {file_path}")
-        return ""
     except Exception as e:
-        print(f"An error occurred while reading the file: {e}")
+        print(f"An error occurred while parsing HTML: {e}")
         return ""
 
 def parse_strong_types(file_path: str) -> str: #compatible with older versions of FDA guidance documents
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(BASE_DIR / file_path, 'r', encoding='utf-8') as f:
             raw = f.read()
         soup = BeautifulSoup(raw, 'html.parser')
     
@@ -270,16 +278,16 @@ def extract_with_context(full_text: str, top_n: int = 10, window: int = 1) -> st
         # Higher score = more likely to be a key summary sentence.
         scored_sentences.append((score, i, sentence))
 
-        top_sentences = sorted(scored_sentences, key=lambda x: x[0], reverse=True)[:top_n]
+    top_sentences = sorted(scored_sentences, key=lambda x: x[0], reverse=True)[:top_n]
 
-        final_indices = set()
-        for _, idx, _ in top_sentences:
-            start = max(0, idx - window)
-            end = min(len(sentences), idx + window + 1)
-            final_indices.update(range(start, end))
+    final_indices = set()
+    for _, idx, _ in top_sentences:
+        start = max(0, idx - window)
+        end = min(len(sentences), idx + window + 1)
+        final_indices.update(range(start, end))
 
-        result_sentences = [sentences[i] for i in sorted(final_indices)]
-        return ' '.join(result_sentences)
+    result_sentences = [sentences[i] for i in sorted(final_indices)]
+    return ' '.join(result_sentences)
 
 
 def summarize_with_ai(core_text: str, url: str) -> str:
@@ -407,7 +415,7 @@ Text to analyze:
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-     output_file = Path("latest.txt")
+     output_file = (BASE_DIR / "latest.txt")
      output_file.write_text("", encoding="utf-8")
 
      raw_content = parse_h_types("test_content.html")
@@ -417,12 +425,12 @@ if __name__ == "__main__":
          print("Failed to read content.")
      core_text = extract_with_context(raw_content)
 
-     with open("latest.txt", "r", encoding="utf-8") as f:
+     with open(BASE_DIR / "latest.txt", "r", encoding="utf-8") as f:
          file_name = f.read().strip()
          print(f"Latest file name: {file_name}")
 
      if file_name:
-        with open(file_name, "r", encoding="utf-8") as f:
+        with open(BASE_DIR / file_name, "r", encoding="utf-8") as f:
             general_info = f.read()
             if general_info:
                 print("Successfully read general information.")

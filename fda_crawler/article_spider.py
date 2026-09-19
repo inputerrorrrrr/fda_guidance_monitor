@@ -1,9 +1,12 @@
+from pathlib import Path
 import requests
 import time
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv(BASE_DIR / ".env")
 
 headers = {
     "User-Agent": f"FDAinfoBot(Contact: {os.getenv('CONTACT_EMAIL')})"
@@ -30,7 +33,7 @@ if __name__ == "__main__":
     content = fetch_url_content(test_url)
     if content:
         print("Successfully fetched content.")
-        with open("test_content.html", "w", encoding="utf-8") as f:
+        with open(BASE_DIR / "test_content.html", "w", encoding="utf-8") as f:
             f.write(content)
     else:
         print("Failed to fetch content.")

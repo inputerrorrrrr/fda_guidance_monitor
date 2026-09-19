@@ -1,8 +1,11 @@
+from pathlib import Path
 from datetime import datetime, timezone
+
+BASE_DIR = Path(__file__).resolve().parent
 
 def get_last_run_time(file_path: str = "last_run.txt") -> datetime:
     try:
-        with open(file_path, 'r') as f:
+        with open(BASE_DIR / file_path, 'r') as f:
             last_run_time_str = f.read().strip()
             return datetime.fromisoformat(last_run_time_str)
     except FileNotFoundError:
@@ -12,7 +15,7 @@ def get_last_run_time(file_path: str = "last_run.txt") -> datetime:
         return datetime.min.replace(tzinfo=timezone.utc)
 
 def save_current_run_time(file_path: str = "last_run.txt"):
-    with open(file_path, 'w') as f:
+    with open(BASE_DIR / file_path, 'w') as f:
         f.write(datetime.now(timezone.utc).isoformat())
     print(f"Saved current run time to {file_path}.")
 

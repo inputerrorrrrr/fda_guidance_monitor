@@ -7,11 +7,13 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv(BASE_DIR / ".env")
 
 if __name__ == "__main__":
 
-    output_file = Path("latest.txt")
+    output_file = (BASE_DIR / "latest.txt")
     output_file.write_text("", encoding="utf-8")
 
     regulatory_urls = sitemap_crawler.fetch_urls()
@@ -26,8 +28,11 @@ if __name__ == "__main__":
         print(f"Processing URL: {url} (Last Modified: {lastmod})")
         raw_content = article_spider.fetch_url_content(url)
         if raw_content:
-            processed_content = content_processor.parse_h_types(raw_content)
-            core_text = content_processor.extract_with_context(raw_content)
+            processed_content = content_processor.parse_h_html(raw_content)
+            if not processed_content:
+                print(f"Failed to extract content for {url}.")
+                continue
+            core_text = content_processor.extract_with_context(processed_content)
             summary = content_processor.summarize_with_ai(core_text, url)
             print(f"Summarized successfully!")
         else:
